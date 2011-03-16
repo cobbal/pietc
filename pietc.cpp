@@ -1,6 +1,8 @@
 #include <iostream>
-#include "ProgramImage.h"
+#include "ProgramImage.hpp"
+#include "Program.hpp"
+#include <string>
 
 int main(int argc, char ** argv) {
-    std::cout << pietc::ProgramImage("test.png") << std::endl;
+    pietc::Program("euclid.png");
 }

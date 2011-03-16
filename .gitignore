@@ -1,5 +1,7 @@
 build
 png++
 *~
+*.xcuserdatad
+out.dot
 .DS_Store
 \#*\#

@@ -1,0 +1,164 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		E88895CF13307F17009D595C /* Codel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Codel.cpp; sourceTree = "<group>"; };
+		E88895D013307F17009D595C /* Codel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Codel.hpp; sourceTree = "<group>"; };
+		E88895D113307F17009D595C /* colors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = colors.cpp; sourceTree = "<group>"; };
+		E88895D213307F17009D595C /* colors.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = colors.hpp; sourceTree = "<group>"; };
+		E88895D313307F17009D595C /* pietc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pietc.cpp; sourceTree = "<group>"; };
+		E88895D413307F17009D595C /* Program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Program.cpp; sourceTree = "<group>"; };
+		E88895D513307F17009D595C /* Program.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Program.hpp; sourceTree = "<group>"; };
+		E88895D613307F17009D595C /* ProgramImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProgramImage.cpp; sourceTree = "<group>"; };
+		E88895D713307F17009D595C /* ProgramImage.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ProgramImage.hpp; sourceTree = "<group>"; };
+		E88895D813307F17009D595C /* Transition.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Transition.hpp; sourceTree = "<group>"; };
+		E88895DA13307F22009D595C /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		E8E60F5013307E8000536CCE = {
+			isa = PBXGroup;
+			children = (
+				E88895CF13307F17009D595C /* Codel.cpp */,
+				E88895D013307F17009D595C /* Codel.hpp */,
+				E88895D113307F17009D595C /* colors.cpp */,
+				E88895D213307F17009D595C /* colors.hpp */,
+				E88895D313307F17009D595C /* pietc.cpp */,
+				E88895D413307F17009D595C /* Program.cpp */,
+				E88895D513307F17009D595C /* Program.hpp */,
+				E88895D613307F17009D595C /* ProgramImage.cpp */,
+				E88895D713307F17009D595C /* ProgramImage.hpp */,
+				E88895D813307F17009D595C /* Transition.hpp */,
+				E88895DA13307F22009D595C /* Makefile */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		E8E60F5713307E8000536CCE /* pietc */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = E8E60F5A13307E8000536CCE /* Build configuration list for PBXLegacyTarget "pietc" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			dependencies = (
+			);
+			name = pietc;
+			passBuildSettingsInEnvironment = 1;
+			productName = pietc;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		E8E60F5213307E8000536CCE /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = E8E60F5513307E8000536CCE /* Build configuration list for PBXProject "pietc" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = E8E60F5013307E8000536CCE;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E8E60F5713307E8000536CCE /* pietc */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		E8E60F5813307E8000536CCE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		E8E60F5913307E8000536CCE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		E8E60F5B13307E8000536CCE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E8E60F5C13307E8000536CCE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E8E60F5513307E8000536CCE /* Build configuration list for PBXProject "pietc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E8E60F5813307E8000536CCE /* Debug */,
+				E8E60F5913307E8000536CCE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E8E60F5A13307E8000536CCE /* Build configuration list for PBXLegacyTarget "pietc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E8E60F5B13307E8000536CCE /* Debug */,
+				E8E60F5C13307E8000536CCE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E8E60F5213307E8000536CCE /* Project object */;
+}

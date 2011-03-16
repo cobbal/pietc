@@ -1,3 +1,6 @@
+#ifndef __COLORS_HPP__
+#define __COLORS_HPP__
+
 namespace pietc {
 namespace colors {
 
@@ -8,7 +11,7 @@ struct rgba {
     unsigned char alpha;
 };
 
-enum color {
+enum color_t {
     lightRed, red, darkRed,
     lightYellow, yellow, darkYellow,
     lightGreen, green, darkGreen,
@@ -21,8 +24,11 @@ enum color {
 
 }
 
-using colors::color;
+using colors::color_t;
 
-color colorFromValue(colors::rgba value);
+color_t colorFromValue(colors::rgba value);
+const char * colorName(color_t color);
 
 }
+
+#endif // __COLORS_HPP__

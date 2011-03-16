@@ -1,16 +1,15 @@
-#include "ProgramImage.h"
+#include "ProgramImage.hpp"
 #include "png++/png.hpp"
 #include <iomanip>
 
 namespace pietc {
-
 
 ProgramImage::ProgramImage(const char * filename) {
     const png::image<png::rgba_pixel> image(filename);
     const png::pixel_buffer<png::rgba_pixel> & buf = image.get_pixbuf();
     width = buf.get_width();
     height = buf.get_height();
-    program.reset(new color[width * height]);
+    program.reset(new color_t[width * height]);
     
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -23,6 +22,19 @@ ProgramImage::ProgramImage(const char * filename) {
 
 ProgramImage::~ProgramImage() {
 }
+
+unsigned int ProgramImage::get_width() const {
+    return width;
+}
+
+unsigned int ProgramImage::get_height() const {
+    return height;
+}
+
+const color_t & ProgramImage::get(unsigned int x, unsigned int y) const {
+    return program[width * y + x];
+}
+
 
 std::ostream &operator<<(std::ostream &stream, const ProgramImage & prog) {
     std::ios_base::fmtflags originalFormat = stream.flags();
