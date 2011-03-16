@@ -10,7 +10,7 @@ class Transition;
 
 class Codel {
 public:
-    Codel(color_t color) : color(color) {
+    Codel(color_t _color) : color(_color) {
         size = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 2; j++) {

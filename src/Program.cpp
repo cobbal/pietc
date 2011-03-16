@@ -147,7 +147,7 @@ namespace pietc {
         
         std::ofstream viz("out.dot");
         
-        map<string, list<string>> edges;
+        map<string, list<string> > edges;
         
         BOOST_FOREACH(Transition & tran, transitions) {
             std::stringstream edge;
@@ -174,7 +174,7 @@ namespace pietc {
         }
         
         viz << "digraph \"" << filename << "\" {" << std::endl;
-        typedef const pair<string, list<string>> edgePair;
+        typedef const pair<string, list<string> > edgePair;
         BOOST_FOREACH(edgePair & e, edges) {
             viz << e.first << " [ label = \"";
             bool first = true;
