@@ -1,8 +1,10 @@
 #ifndef __COLORS_HPP__
 #define __COLORS_HPP__
 
-namespace pietc {
-namespace colors {
+namespace pietc { namespace colors {
+#if 0
+}} // fixing auto-indetation
+#endif
 
 struct rgba {
     unsigned char red;
@@ -11,6 +13,8 @@ struct rgba {
     unsigned char alpha;
 };
 
+const int chromaticCount = 18; // excludes white and black
+    
 enum color_t {
     lightRed, red, darkRed,
     lightYellow, yellow, darkYellow,

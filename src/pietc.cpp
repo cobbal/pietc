@@ -4,5 +4,8 @@
 #include <string>
 
 int main(int argc, char ** argv) {
-    pietc::Program("euclid.png");
+    pietc::Program prog("test-images/euclid.png");
+    prog.codegen()->dump();
+    
+    getchar();
 }

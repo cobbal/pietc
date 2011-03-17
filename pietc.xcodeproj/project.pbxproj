@@ -39,6 +39,8 @@
 		E8F25DED133179560023A7B9 /* ProgramImage.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProgramImage.hpp; path = src/ProgramImage.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DEE133179560023A7B9 /* Transition.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Transition.hpp; path = src/Transition.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25E26133179810023A7B9 /* png++.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "png++.xcodeproj"; path = "src/png++/png++.xcodeproj"; sourceTree = SOURCE_ROOT; };
+		E8F657511332919E00129928 /* pietRuntime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pietRuntime.c; path = runtime/pietRuntime.c; sourceTree = SOURCE_ROOT; };
+		E8F6575E1332942C00129928 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = runtime/Makefile; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				E8F25DD11331790A0023A7B9 /* src */,
+				E8F65756133291AC00129928 /* runtime */,
 				E8F25DCF1331790A0023A7B9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -94,7 +97,34 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		E8F65756133291AC00129928 /* runtime */ = {
+			isa = PBXGroup;
+			children = (
+				E8F657511332919E00129928 /* pietRuntime.c */,
+				E8F6575E1332942C00129928 /* Makefile */,
+			);
+			name = runtime;
+			path = pietc;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		E8F65758133293AC00129928 /* pietc-runtime.bc */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = E8F65759133293AC00129928 /* Build configuration list for PBXLegacyTarget "pietc-runtime.bc" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = /Users/acobb/Desktop/programs/pietc/runtime;
+			dependencies = (
+			);
+			name = "pietc-runtime.bc";
+			passBuildSettingsInEnvironment = 1;
+			productName = "pietc-runtime.bc";
+		};
+/* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
 		E8F25DCD1331790A0023A7B9 /* pietc */ = {
@@ -138,6 +168,7 @@
 			projectRoot = "";
 			targets = (
 				E8F25DCD1331790A0023A7B9 /* pietc */,
+				E8F65758133293AC00129928 /* pietc-runtime.bc */,
 			);
 		};
 /* End PBXProject section */
@@ -222,7 +253,21 @@
 					/usr/X11/include/,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/X11/lib/;
-				OTHER_LDFLAGS = "-lpng";
+				OTHER_CFLAGS = (
+					"-DNDEBUG",
+					"-D_GNU_SOURCE",
+					"-D__STDC_LIMIT_MACROS",
+					"-D__STDC_CONSTANT_MACROS",
+				);
+				OTHER_LDFLAGS = (
+					"-lpng",
+					"-L/usr/local/lib",
+					"-lpthread",
+					"-lm",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-lLLVMSystem",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -259,7 +304,50 @@
 					/usr/X11/include/,
 				);
 				LIBRARY_SEARCH_PATHS = /usr/X11/lib/;
-				OTHER_LDFLAGS = "-lpng";
+				OTHER_CFLAGS = (
+					"-DNDEBUG",
+					"-D_GNU_SOURCE",
+					"-D__STDC_LIMIT_MACROS",
+					"-D__STDC_CONSTANT_MACROS",
+				);
+				OTHER_LDFLAGS = (
+					"-lpng",
+					"-L/usr/local/lib",
+					"-lpthread",
+					"-lm",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-lLLVMSystem",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		E8F6575A133293AC00129928 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		E8F6575B133293AC00129928 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -284,6 +372,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		E8F65759133293AC00129928 /* Build configuration list for PBXLegacyTarget "pietc-runtime.bc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E8F6575A133293AC00129928 /* Debug */,
+				E8F6575B133293AC00129928 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
