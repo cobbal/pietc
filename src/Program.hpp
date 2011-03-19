@@ -11,6 +11,7 @@
 #include <llvm/Module.h>
 #include <llvm/Analysis/Verifier.h>
 #include <llvm/Support/IRBuilder.h>
+#include <llvm/IntrinsicInst.h>
 
 namespace pietc {
     
@@ -41,9 +42,12 @@ namespace pietc {
         
         // Code generation variables
         llvm::LLVMContext context;
+        
         llvm::BasicBlock * runtimeError;
         llvm::AllocaInst * dpVar;
         llvm::AllocaInst * ccVar;
+        llvm::AllocaInst * stackVar;
+        
         const llvm::Type * stackValueTy;
         const llvm::Type * stackTy;
         std::map<Codel *, llvm::BasicBlock *> codelBlocks;
@@ -55,6 +59,17 @@ namespace pietc {
         llvm::Function * pushFn;
         llvm::Function * popFn;
         llvm::Function * peekFn;
+        llvm::Function * newStackFn;
+        llvm::Function * rollStackFn;
+        llvm::Function * putcharFn;
+        llvm::Function * getcharFn;
+        llvm::Function * putintFn;
+        llvm::Function * getintFn;
+        llvm::Function * logStuffFn;
+        
+        // LLVM Intrinsic functions
+        llvm::Function * debugDeclareFn;
+        llvm::Function * debugValueFn;
         
         // Image functions
         void explore(int x, int y, Codel * codel);
@@ -72,9 +87,12 @@ namespace pietc {
          */
         
         // Code generation functions
-        void generateCodelCode(Codel * codel, llvm::IRBuilder<true> & builder);
+        void generateCodelCode(Codel * codel, llvm::IRBuilder<true> & builder, llvm::Module * module);
         void generateOperationCode(int operation, int codelSize, llvm::IRBuilder<true> & builder);
         llvm::ConstantInt * constInt(int x);
+        llvm::ConstantInt * constByte(int x);
+        llvm::ConstantInt * constBit(int x);
+        llvm::Constant * constString(const char * str);
     };
 } // namespace pietc
 

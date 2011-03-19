@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E8727B3F1333C3CB004B893B /* DwarfDebugGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8727B3D1333C3CB004B893B /* DwarfDebugGenerator.cpp */; };
 		E8F25DE71331794B0023A7B9 /* Codel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DE31331794B0023A7B9 /* Codel.cpp */; };
 		E8F25DE81331794B0023A7B9 /* colors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DE51331794B0023A7B9 /* colors.cpp */; };
 		E8F25DEF133179560023A7B9 /* pietc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DE9133179560023A7B9 /* pietc.cpp */; };
@@ -27,6 +28,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E8727B3D1333C3CB004B893B /* DwarfDebugGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DwarfDebugGenerator.cpp; path = src/DwarfDebugGenerator.cpp; sourceTree = SOURCE_ROOT; };
+		E8727B3E1333C3CB004B893B /* DwarfDebugGenerator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DwarfDebugGenerator.hpp; path = src/DwarfDebugGenerator.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DCE1331790A0023A7B9 /* pietc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pietc; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8F25DE31331794B0023A7B9 /* Codel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Codel.cpp; path = src/Codel.cpp; sourceTree = SOURCE_ROOT; };
 		E8F25DE41331794B0023A7B9 /* Codel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Codel.hpp; path = src/Codel.hpp; sourceTree = SOURCE_ROOT; };
@@ -74,16 +77,18 @@
 		E8F25DD11331790A0023A7B9 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E8F25DE31331794B0023A7B9 /* Codel.cpp */,
-				E8F25DE41331794B0023A7B9 /* Codel.hpp */,
-				E8F25DE51331794B0023A7B9 /* colors.cpp */,
-				E8F25DE61331794B0023A7B9 /* colors.hpp */,
-				E8F25DE9133179560023A7B9 /* pietc.cpp */,
-				E8F25DEA133179560023A7B9 /* Program.cpp */,
-				E8F25DEB133179560023A7B9 /* Program.hpp */,
-				E8F25DEC133179560023A7B9 /* ProgramImage.cpp */,
-				E8F25DED133179560023A7B9 /* ProgramImage.hpp */,
 				E8F25DEE133179560023A7B9 /* Transition.hpp */,
+				E8F25DE41331794B0023A7B9 /* Codel.hpp */,
+				E8F25DE31331794B0023A7B9 /* Codel.cpp */,
+				E8F25DE61331794B0023A7B9 /* colors.hpp */,
+				E8F25DE51331794B0023A7B9 /* colors.cpp */,
+				E8F25DEB133179560023A7B9 /* Program.hpp */,
+				E8F25DEA133179560023A7B9 /* Program.cpp */,
+				E8F25DED133179560023A7B9 /* ProgramImage.hpp */,
+				E8F25DEC133179560023A7B9 /* ProgramImage.cpp */,
+				E8727B3E1333C3CB004B893B /* DwarfDebugGenerator.hpp */,
+				E8727B3D1333C3CB004B893B /* DwarfDebugGenerator.cpp */,
+				E8F25DE9133179560023A7B9 /* pietc.cpp */,
 				E8F25E26133179810023A7B9 /* png++.xcodeproj */,
 			);
 			name = src;
@@ -183,6 +188,7 @@
 				E8F25DEF133179560023A7B9 /* pietc.cpp in Sources */,
 				E8F25DF0133179560023A7B9 /* Program.cpp in Sources */,
 				E8F25DF1133179560023A7B9 /* ProgramImage.cpp in Sources */,
+				E8727B3F1333C3CB004B893B /* DwarfDebugGenerator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -380,6 +386,7 @@
 				E8F6575B133293AC00129928 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
