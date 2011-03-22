@@ -66,6 +66,7 @@ namespace pietc {
         llvm::Function * putintFn;
         llvm::Function * getintFn;
         llvm::Function * logStuffFn;
+        llvm::Function * stackHasLength;
         
         // LLVM Intrinsic functions
         llvm::Function * debugDeclareFn;
@@ -89,6 +90,9 @@ namespace pietc {
         // Code generation functions
         void generateCodelCode(Codel * codel, llvm::IRBuilder<true> & builder, llvm::Module * module);
         void generateOperationCode(int operation, int codelSize, llvm::IRBuilder<true> & builder);
+        
+        void optimize(llvm::Module * module);
+        
         llvm::ConstantInt * constInt(int x);
         llvm::ConstantInt * constByte(int x);
         llvm::ConstantInt * constBit(int x);

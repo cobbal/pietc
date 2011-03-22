@@ -16,9 +16,9 @@
 
 void* fakemalloc(int size) {
     static char space[1000];
-    static void* freeSpace = space;
-    void* ret = freeSpace;
-    freeSpace += size;
+    static void* free_space = space;
+    void* ret = free_space;
+    free_space += size;
     return ret;
 }
 
@@ -27,22 +27,22 @@ void fakefree(void* ptr) {
 
 #endif
 
-typedef int32_t stackValue;
+typedef int32_t stack_value;
 
-typedef struct _listNode {
-    stackValue car;
-    struct _listNode * cdr;
+typedef struct _list_node {
+    stack_value car;
+    struct _list_node * cdr;
 } *list, **stack;
 
 
-static list cons(stackValue car, list cdr) {
+static list cons(stack_value car, list cdr) {
     list newList = malloc(sizeof(*newList));
     newList->car = car;
     newList->cdr = cdr;
     return newList;
 }
 
-static stackValue car(list lst) {
+static stack_value car(list lst) {
     return lst->car;
 }
 
@@ -50,12 +50,12 @@ static list cdr(list lst) {
     return lst->cdr;
 }
 
-void push(stack stk, stackValue val) {
+void push(stack stk, stack_value val) {
     //fprintf(stderr, "push %p\n", stk);
     *stk = cons(val, *stk);
 }
 
-stackValue pop(stack stk) {
+stack_value pop(stack stk) {
     //fprintf(stderr, "pop %p %p\n", stk, *stk);
     if (*stk == 0) {
         return 0;
@@ -67,7 +67,7 @@ stackValue pop(stack stk) {
     return ret;
 }
 
-stackValue peek(stack stk) {
+stack_value peek(stack stk) {
     // fprintf(stderr, "peek %p\n", stk);
     return car(*stk);
 }
@@ -79,7 +79,21 @@ stack new_stack() {
     return ret;
 }
 
-void roll_stack(stack stk, stackValue rollCount, stackValue depth) {
+char stack_has_length(stack stk, int length) {
+    list node = *stk;
+    int i;
+    for (i = 0; i < length; i++) {
+        if (!node) {
+            fprintf(stderr, "stack does _NOT_ have required length of %d\n", length);
+            return 0;
+        }
+        node = cdr(node);
+    }
+    fprintf(stderr, "stack has required length of %d\n", length);
+    return 1;
+}
+
+void roll_stack(stack stk, stack_value rollCount, stack_value depth) {
     if (depth <= 0) {
         return;
     }
@@ -90,6 +104,9 @@ void roll_stack(stack stk, stackValue rollCount, stackValue depth) {
     rollCount %= depth;
     
     if (rollCount == 0) {
+        return;
+    }
+    if (!stack_has_length(stk, depth)) {
         return;
     }
     
@@ -107,11 +124,11 @@ void roll_stack(stack stk, stackValue rollCount, stackValue depth) {
     *stk = temp;
 }
 
-void putint(stackValue val) {
+void putint(stack_value val) {
     printf("%d ", val);
 }
 
-stackValue getint() {
+stack_value getint() {
     int a;
     printf("<input int: ");
     scanf("%d", &a);
@@ -119,14 +136,14 @@ stackValue getint() {
     return a;
 }
 
-void printList(list list) {
+void print_list(list list) {
     if (list) {
-        printList(cdr(list));
+        print_list(cdr(list));
         fprintf(stderr, "%d ", car(list));
     }
 }
 
-void logOp(int operation) {
+void log_op(int operation) {
     switch(operation) {
         case 1:
             fprintf(stderr, "PUSH");
@@ -181,15 +198,15 @@ void logOp(int operation) {
             break;
         case 0:
         default:
-            fprintf(stderr, "ERROR (op %d)", operation);
+            fprintf(stderr, "NOOP (op %d)", operation);
             break;
     }
 }
 
-void logStuff(int operation, char * from, char * to, stack stk) {
+void log_stuff(int operation, char * from, char * to, int dp, int cc, stack stk) {
     fprintf(stderr, "stack = ");
-    printList(*stk);
-    fprintf(stderr, "\n%s -> %s operation ", from, to);
-    logOp(operation);
+    print_list(*stk);
+    fprintf(stderr, "\n%s -(%c%c)-> %s operation ", from, "RDLU"[dp], "lr"[cc], to);
+    log_op(operation);
     fprintf(stderr, "\n");
 }
