@@ -79,7 +79,7 @@ stack new_stack() {
     return ret;
 }
 
-char stack_has_length(stack stk, int length) {
+int stack_has_length(stack stk, int length) {
     list node = *stk;
     int i;
     for (i = 0; i < length; i++) {
@@ -209,4 +209,9 @@ void log_stuff(int operation, char * from, char * to, int dp, int cc, stack stk)
     fprintf(stderr, "\n%s -(%c%c)-> %s operation ", from, "RDLU"[dp], "lr"[cc], to);
     log_op(operation);
     fprintf(stderr, "\n");
+}
+
+void runtime_error()
+{
+    exit(-1);
 }

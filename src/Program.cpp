@@ -9,11 +9,13 @@
 #include <iomanip>
 #include <sstream>
 #include <vector>
+#include <queue>
 #include <llvm/Support/Dwarf.h>
 #include <llvm/PassManager.h>
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Transforms/Scalar.h>
 
+#define EXCESSIVE_LOGGING 0
 
 namespace pietc {
 #if 0 // fix indentation
@@ -27,33 +29,33 @@ using std::pair;
 using std::string;
 using std::vector;
 
-void Program::explore(int x, int y, Codel * codel) {
+void Program::explore(int x, int y, ColorBlock * block) {
     if (componentMap.count(std::make_pair(x, y)) > 0) {
         return;
     }
-    componentMap[std::make_pair(x, y)] = codel;
-    codel->size++;
+    componentMap[std::make_pair(x, y)] = block;
+    block->size++;
     
     if (x + 1 < width && image.get(x, y) == image.get(x + 1, y)) {
-        explore(x + 1, y, codel);
+        explore(x + 1, y, block);
     }
     if (x - 1 >= 0 && image.get(x, y) == image.get(x - 1, y)) {
-        explore(x - 1, y, codel);
+        explore(x - 1, y, block);
     }
     if (y + 1 < height && image.get(x, y) == image.get(x, y + 1)) {
-        explore(x, y + 1, codel);
+        explore(x, y + 1, block);
     }
     if (y - 1 >= 0 && image.get(x, y) == image.get(x, y - 1)) {
-        explore(x, y - 1, codel);
+        explore(x, y - 1, block);
     }
 }
 
-bool Program::computeTransition(Codel * codel, int dp, int cc, Transition & tran) {
-    if (codel->color == colors::white || codel->color == colors::black) {
+bool Program::computeTransition(ColorBlock * ColorBlock, int dp, int cc, Transition & tran) {
+    if (ColorBlock->color == colors::white || ColorBlock->color == colors::black) {
         return false;
     }
     
-    tran.from = codel;
+    tran.from = ColorBlock;
     
     // Try to move in gray-code-like rotations
     for (int rotation = 0; rotation < 8; rotation++) {
@@ -64,7 +66,7 @@ bool Program::computeTransition(Codel * codel, int dp, int cc, Transition & tran
         int newCc = (cc + ccFlip) % 2;
         tran.obstacleTurnsDp = dpSpin;
         tran.obstacleFlipCc = ccFlip;
-        pair<int, int> newLoc = extremas[codel].directions[newDp][newCc];
+        pair<int, int> newLoc = extremas[ColorBlock].directions[newDp][newCc];
         
         const static int steps[4][2] = {
             { 1, 0}, {0,  1},
@@ -105,23 +107,23 @@ bool Program::computeTransition(Codel * codel, int dp, int cc, Transition & tran
     return true;
 }
 
-void Program::computeCodelTransitions(Codel * codel) {
+void Program::computeColorBlockTransitions(ColorBlock * block) {
     for (int dp = 0; dp < 4; dp++) {
         for (int cc = 0; cc < 2; cc++) {
             transitions.push_back(Transition());
-            if (!computeTransition(codel, dp, cc, transitions.back())) {
+            if (!computeTransition(block, dp, cc, transitions.back())) {
                 transitions.pop_back();
             } else {
-                codel->transitions[dp][cc] = &transitions.back();
+                block->transitions[dp][cc] = &transitions.back();
             }
         }
     }
 }
 
-int Program::indexOfCodel(Codel * codel) {
+int Program::indexOfColorBlock(ColorBlock * block) {
     int i = 0;
-    BOOST_FOREACH(Codel & c, codels) {
-        if (&c == codel) {
+    BOOST_FOREACH(ColorBlock & c, colorBlocks) {
+        if (&c == block) {
             return i;
         }
         i++;
@@ -145,17 +147,17 @@ height(image.get_height()) {
             if (componentMap.count(pos) == 0 && color != colors::white && color != colors::black) {
                 
                 std::stringstream idStream;
-                idStream << "codel_" << idCounter++ << "_" << colorName(color);
+                idStream << "ColorBlock_" << idCounter++ << "_" << colorName(color);
 
-                codels.push_back(Codel(color, idStream.str()));
-                explore(x, y, &codels.back());
+                colorBlocks.push_back(ColorBlock(color, idStream.str()));
+                explore(x, y, &colorBlocks.back());
             }
-            //std::cout << std::setw(3) << indexOfCodel(componentMap[pos]);
+            //std::cout << std::setw(3) << indexOfColorBlock(componentMap[pos]);
         }
         //std::cout << std::endl;
     }
     
-    typedef const pair<const pair<int, int>, Codel *> componentMapPair;
+    typedef const pair<const pair<int, int>, ColorBlock *> componentMapPair;
     BOOST_FOREACH(componentMapPair & pixel, componentMap) {
         for (int dp = 0; dp < 4; dp++) {
             for (int cc = 0; cc < 2; cc++) {
@@ -164,8 +166,8 @@ height(image.get_height()) {
         }
     }
     
-    BOOST_FOREACH(Codel & codel, codels) {
-        computeCodelTransitions(&codel);
+    BOOST_FOREACH(ColorBlock & block, colorBlocks) {
+        computeColorBlockTransitions(&block);
     }
     
     std::ofstream viz("out.dot");
@@ -174,9 +176,9 @@ height(image.get_height()) {
     
     BOOST_FOREACH(Transition & tran, transitions) {
         std::stringstream edge;
-        edge << "    \"" << indexOfCodel(tran.from) << " - " << colorName(tran.from->color) << "\" -> ";
+        edge << "    \"" << indexOfColorBlock(tran.from) << " - " << colorName(tran.from->color) << "\" -> ";
         if (tran.to) {
-            edge << "\"" << indexOfCodel(tran.to) << " - " << colorName(tran.to->color) << "\"";
+            edge << "\"" << indexOfColorBlock(tran.to) << " - " << colorName(tran.to->color) << "\"";
             string dir;
             int dp, cc;
             // generate gray-code-like rotations
@@ -218,65 +220,32 @@ height(image.get_height()) {
 }
 
 llvm::Module * Program::codegen() {
-    codelBlocks.clear();
+    transitionBlocks.clear();
     
     llvm::Module * module = new llvm::Module("pietc", context);
     stackValueTy = llvm::Type::getInt32Ty(context);
     
-    //debugDeclareFn = llvm::Intrinsic::getDeclaration(module, llvm::Intrinsic::dbg_declare);
-    //debugValueFn = llvm::Intrinsic::getDeclaration(module, llvm::Intrinsic::dbg_value);
-
     createRuntimeDeclarations(module);
         
-    /*llvm::MDNode * dbgCompilationUnit = dwarf::compilationUnitInfo(context,
-                                                                   llvm::dwarf::DW_LANG_lo_user + 'P' + 'i' + 'e' + 't',
-                                                                   "someimage.png", 
-                                                                   "/", 
-                                                                   "pietc 0.1", 
-                                                                   true, 
-                                                                   false, 
-                                                                   "",
-                                                                   0);
-    llvm::NamedMDNode * moduleMD = module->getOrInsertNamedMetadata("debugInfo");
-    moduleMD->addOperand(dbgCompilationUnit);
-*/
-     
     llvm::FunctionType * mainType = llvm::FunctionType::get(llvm::Type::getInt32Ty(context), false);
     mainFn = llvm::Function::Create(mainType, llvm::Function::ExternalLinkage, "main", module);
     
     llvm::IRBuilder<true> builder(context);
     llvm::BasicBlock * mainSetup = llvm::BasicBlock::Create(context, "", mainFn);
+    runtimeError = llvm::BasicBlock::Create(context, "runtime_error", mainFn);
     builder.SetInsertPoint(mainSetup);
-    
-    dpVar = builder.CreateAlloca(llvm::Type::getInt8Ty(context), 0, "dp");
-    builder.CreateStore(constByte(0), dpVar);
-    
-    
-    //llvm::MDNode * dpMetaNode = llvm::MDNode::get(&dpVar, 1);
-    //builder.CreateCall(debugValueFn, dpMetaNode, );
-    
-    ccVar = builder.CreateAlloca(llvm::Type::getInt8Ty(context), 0, "cc");
-    builder.CreateStore(constByte(0), ccVar);
     
     stackVar = builder.CreateAlloca(stackTy, 0, "stk");
     builder.CreateStore(builder.CreateCall(newStackFn), stackVar);
     
-    // create all the blocks first, then fill them out
-    BOOST_FOREACH(Codel & codel, codels) {
-        codelBlocks[&codel] = llvm::BasicBlock::Create(context, codel.id, mainFn);
-    }
-    runtimeError = llvm::BasicBlock::Create(context, "runtime_error", mainFn);
-    builder.SetInsertPoint(runtimeError);
+    llvm::BasicBlock * start = generateReachableBlocks(&colorBlocks.front(), 0, 0);
     
-    typedef const pair<Codel *, llvm::BasicBlock *> CodelBlock;
-    BOOST_FOREACH(CodelBlock & cb, codelBlocks) {
-        builder.SetInsertPoint(cb.second);
-        generateCodelCode(cb.first, builder, module);
-    }
     builder.SetInsertPoint(mainSetup);
-    builder.CreateBr(codelBlocks[&codels.front()]);
+    builder.CreateBr(start);
+    
     builder.SetInsertPoint(runtimeError);
-    builder.CreateRet(constInt(1));
+    builder.CreateRet(constInt(-1));
+
     
     optimize(module);
     
@@ -299,112 +268,84 @@ llvm::Constant * Program::constString(const char * str) {
     return llvm::ConstantArray::get(context, llvm::StringRef::StringRef(str));
 }
 
-void Program::generateCodelCode(Codel * codel, llvm::IRBuilder<true> & builder, llvm::Module * module) {
-    if (codel->transitions[0][0]->opType == Transition::exit) {
-        // if one transition is an exit transition, they all are.
-        builder.CreateRet(constInt(0));
-        return;
+llvm::BasicBlock * Program::generateReachableBlocks(ColorBlock * block, int dp, int cc) {
+    if (transitionBlocks.count(std::make_pair(block, dp * 2 + cc)) > 0) {
+        return transitionBlocks[std::make_pair(block, dp * 2 + cc)];
+    }
+
+    llvm::IRBuilder<true> builder(context);
+    
+    Transition * tran = block->transitions[dp][cc];
+    if ((tran->obstacleTurnsDp || tran->obstacleFlipCc) && tran->opType != Transition::exit) {
+        return generateReachableBlocks(block, (dp + tran->obstacleTurnsDp) % 4, (cc + tran->obstacleFlipCc) % 2);
     }
     
-    llvm::Value * dpValue = builder.CreateLoad(dpVar, "dpValue");
-    llvm::Value * ccValue = builder.CreateLoad(ccVar, "ccValue");
+    int operation = 0;
+    if (tran->opType == Transition::normal) {
+        int hueChange = (6 + (tran->to->color / 3) - (tran->from->color / 3)) % 6;
+        int saturationChange = (3 + (tran->to->color % 3) - (tran->from->color % 3)) % 3;
+        operation = (hueChange * 3 + saturationChange);
+    }
     
-    llvm::Value * combinedValue;
-    combinedValue = builder.CreateMul(dpValue, constByte(2));
-    combinedValue = builder.CreateAdd(combinedValue, ccValue);
-    
-    
-    llvm::SwitchInst * codelSwitch = builder.CreateSwitch(combinedValue, runtimeError);
-    //builder.CreateCall(llvm::Intrinsic::getDeclaration(module, llvm::Intrinsic::dbg_value));
-    llvm::BasicBlock * lastBlock = codelBlocks[codel];
     static const char * dpNames[4] = {"right", "down", "left", "up"};
     static const char * ccNames[2] = {"left", "right"};
-    for (int dp = 0; dp < 4; dp++) {
-        for (int cc = 0; cc < 2; cc++) {
-            std::stringstream idStream;
-            idStream << codel->id + "_" << dpNames[dp] << "_" << ccNames[cc];
-            llvm::BasicBlock * caseBlock = llvm::BasicBlock::Create(context, idStream.str().c_str(), mainFn);
-            caseBlock->moveAfter(lastBlock);
-            lastBlock = caseBlock;
-            
-            codelSwitch->addCase(constByte(dp * 2 + cc),
-                                 caseBlock);
-            Transition * tran = codel->transitions[dp][cc];
-            builder.SetInsertPoint(caseBlock);
-                        
-            llvm::Value * dpRot = constByte(tran->obstacleTurnsDp);
-            llvm::Value * newDp = builder.CreateAdd(dpValue, dpRot);
-            newDp = builder.CreateURem(newDp, constByte(4));
-            builder.CreateStore(newDp, dpVar);
-            
-            llvm::Value * ccRot = constByte(tran->obstacleFlipCc);
-            llvm::Value * newCc = builder.CreateAdd(ccValue, ccRot);
-            newCc = builder.CreateURem(newCc, constByte(2));
-            builder.CreateStore(newCc, ccVar);
-#define EXCESSIVE_LOGGING 0
-#if EXCESSIVE_LOGGING      
-            llvm::Constant * fromArray = constString(tran->from->id.c_str());
-            llvm::GlobalVariable::GlobalVariable * fromGlobal;
-            fromGlobal = new llvm::GlobalVariable::GlobalVariable(*module,
-                                                                  fromArray->getType(),
-                                                                  true,
-                                                                  llvm::Function::PrivateLinkage,
-                                                                  fromArray,
-                                                                  "");
-            llvm::Value * fromStrPtr = builder.CreateConstGEP2_32(fromGlobal, 0, 0, "fromStrPtr");
-            
-            llvm::Constant * toArray = constString(tran->to->id.c_str());
-            llvm::GlobalVariable::GlobalVariable * toGlobal;
-            toGlobal = new llvm::GlobalVariable::GlobalVariable(*module,
-                                                                toArray->getType(),
-                                                                true,
-                                                                llvm::Function::PrivateLinkage,
-                                                                toArray,
-                                                                "");
-            llvm::Value * toStrPtr = builder.CreateConstGEP2_32(toGlobal, 0, 0, "toStrPtr");
-#endif
-            if (tran->opType == Transition::normal) {
-                int hueChange = (6 + (tran->to->color / 3) - (tran->from->color / 3)) % 6;
-                int saturationChange = (3 + (tran->to->color % 3) - (tran->from->color % 3)) % 3;
-                int operation = (hueChange * 3 + saturationChange);
-                
-#if EXCESSIVE_LOGGING
-
-                vector<llvm::Value *> logStuffArgs;
-                logStuffArgs.push_back(constInt(operation));
-                logStuffArgs.push_back(fromStrPtr);
-                logStuffArgs.push_back(toStrPtr);
-                logStuffArgs.push_back(dpValue);
-                logStuffArgs.push_back(ccValue);
-                logStuffArgs.push_back(builder.CreateLoad(stackVar));
-                builder.CreateCall(logStuffFn, logStuffArgs.begin(), logStuffArgs.end());
-#endif
-                
-                generateOperationCode(operation, tran->from->size, builder);
-            } else {
-#if EXCESSIVE_LOGGING
-                
-                vector<llvm::Value *> logStuffArgs;
-                logStuffArgs.push_back(constInt(0));
-                logStuffArgs.push_back(fromStrPtr);
-                logStuffArgs.push_back(toStrPtr);
-                logStuffArgs.push_back(dpValue);
-                logStuffArgs.push_back(ccValue);
-                logStuffArgs.push_back(builder.CreateLoad(stackVar));
-                builder.CreateCall(logStuffFn, logStuffArgs.begin(), logStuffArgs.end());
-#endif
-            }
-            
-            builder.CreateBr(codelBlocks[tran->to]);
-        }
+    
+    std::stringstream idStream;
+    idStream << block->id + "_" << dpNames[dp] << "_" << ccNames[cc];
+    
+    llvm::BasicBlock * transitionBlock = llvm::BasicBlock::Create(context, idStream.str(), mainFn);
+    transitionBlocks[std::make_pair(block, dp * 2 + cc)] = transitionBlock;
+    builder.SetInsertPoint(transitionBlock);
+        
+    if (tran->opType == Transition::exit) {
+        builder.CreateRet(constInt(0));
+        return transitionBlock;
     }
+    
+    if (operation == 10 || operation == 11) { // Pointer and switch
+        std::vector<llvm::BasicBlock *> branches = generateBranchOp(operation, builder);
+        
+        bool isPointer = (operation == 10);
+        
+        for (int i = 0; i < branches.size(); i++) {
+            builder.SetInsertPoint(branches[i]);
+            
+            builder.CreateBr(generateReachableBlocks(tran->to,
+                                                     (dp + (isPointer ? i : 0)) % 4, 
+                                                     (cc + (isPointer ? 0 : i)) % 2));
+        }
+    } else { // Non-branching
+        generateOp(operation, tran->from->size, builder);
+        builder.CreateBr(generateReachableBlocks(tran->to, dp, cc));
+    }
+
+    return transitionBlock;
 }
 
-void Program::generateOperationCode(int operation, int codelSize, llvm::IRBuilder<true> & builder) {
+vector<llvm::BasicBlock *> Program::generateBranchOp(int operation, llvm::IRBuilder<true> & builder) {
+    llvm::Value * stackVal = builder.CreateLoad(stackVar, "stkVal");
+    assert(operation == 10 || operation == 11);
+    
+    bool isPointer = (operation == 10);
+    
+    llvm::Value * rotFlip = builder.CreateAnd(builder.CreateCall(popFn, stackVal), constInt(isPointer ? 3 : 1), "rotFlip");
+    llvm::SwitchInst * switchOrPoint = builder.CreateSwitch(rotFlip, runtimeError);
+    
+    vector<llvm::BasicBlock *> ret;
+    
+    for (int i = 0; i < (isPointer ? 4 : 2); i++) {
+        llvm::BasicBlock * caseBlock = llvm::BasicBlock::Create(context, "", mainFn);
+        switchOrPoint->addCase(constInt(i), caseBlock);
+        ret.push_back(caseBlock);
+    }
+    return ret;
+}
+
+void Program::generateOp(int operation, int ColorBlockSize, llvm::IRBuilder<true> & builder) {
     llvm::Value * stackVal = builder.CreateLoad(stackVar, "stkVal");
     assert(0 < operation && operation < 18);
     
-    int stackNeededPerOp[18] = {
+    static const int stackNeededPerOp[18] = {
         0, 0, 1, // undefined, push, pop
         2, 2, 2, // add, subtract, multiply
         2, 2, 1, // divide, mode, not
@@ -422,8 +363,8 @@ void Program::generateOperationCode(int operation, int codelSize, llvm::IRBuilde
         finishOpBlock = llvm::BasicBlock::Create(context, "finishOp", currentBlock->getParent());
         finishOpBlock->moveAfter(doOpBlock);
         
-        llvm::Value * stackHasRoomByte = builder.CreateCall2(stackHasLength, stackVal, constInt(stackNeeded));
-        llvm::Value * stackHasRoomBit = builder.CreateICmpNE(stackHasRoomByte, constByte(0));
+        llvm::Value * stackHasRoomInt = builder.CreateCall2(stackHasLengthFn, stackVal, constInt(stackNeeded));
+        llvm::Value * stackHasRoomBit = builder.CreateICmpNE(stackHasRoomInt, constInt(0));
         
         builder.CreateCondBr(stackHasRoomBit, doOpBlock, finishOpBlock);
         builder.SetInsertPoint(doOpBlock);
@@ -432,7 +373,7 @@ void Program::generateOperationCode(int operation, int codelSize, llvm::IRBuilde
     switch (operation) {
         case 1: {
             // Push
-            builder.CreateCall2(pushFn, stackVal, constInt(codelSize));
+            builder.CreateCall2(pushFn, stackVal, constInt(ColorBlockSize));
             break;
         }
 
@@ -500,32 +441,6 @@ void Program::generateOperationCode(int operation, int codelSize, llvm::IRBuilde
             builder.CreateCall2(pushFn, stackVal, result);
             break;
         }
-        case 10: {
-            // Pointer
-            llvm::Value * rotation = builder.CreateCall(popFn, stackVal, "rotation");
-            
-            llvm::Value * dpBeforePointerByte = builder.CreateLoad(dpVar);
-            llvm::Value * dpBeforePointer = builder.CreateIntCast(dpBeforePointerByte, stackValueTy, true, "dpBeforePointer");
-            llvm::Value * dpAfterPointerRaw = builder.CreateAdd(dpBeforePointer, rotation);
-            llvm::Value * dpAfterPointerUncast = builder.CreateAnd(dpAfterPointerRaw, 3); // correct mod 4
-            llvm::Value * newDp = builder.CreateIntCast(dpAfterPointerUncast, llvm::Type::getInt8Ty(context), true, "newDp");
-            
-            builder.CreateStore(newDp, dpVar);
-            break;
-        }
-        case 11: {
-            // Switch
-            llvm::Value * rotation = builder.CreateCall(popFn, stackVal, "rotation");
-            
-            llvm::Value * ccBeforeSwitchByte = builder.CreateLoad(ccVar, "ccBeforeSwitch");
-            llvm::Value * ccBeforeSwitch = builder.CreateIntCast(ccBeforeSwitchByte, stackValueTy, true, "ccBeforeSwitch");
-            llvm::Value * ccAfterSwitchRaw = builder.CreateAdd(ccBeforeSwitch, rotation);
-            llvm::Value * ccAfterSwitchUncast = builder.CreateAnd(ccAfterSwitchRaw, 1); // correct mod 2
-            llvm::Value * newCc = builder.CreateIntCast(ccAfterSwitchUncast, llvm::Type::getInt8Ty(context), true, "newCc");
-            
-            builder.CreateStore(newCc, ccVar);
-            break;
-        }
         case 12: {
             // Duplicate
             llvm::Value * a = builder.CreateCall(peekFn, stackVal, "a");
@@ -564,6 +479,10 @@ void Program::generateOperationCode(int operation, int codelSize, llvm::IRBuilde
             break;
         }
         case 0:
+            // Special case (noop)
+            break;
+        case 10: // These are branching ops, can't deal with them in this function
+        case 11:
         default:
             std::cerr << "Internal compiler error: unknown operation " << operation << std::endl;
             exit(-1);
@@ -575,15 +494,15 @@ void Program::generateOperationCode(int operation, int codelSize, llvm::IRBuilde
 }
 
 void Program::optimize(llvm::Module * module) {
-    llvm::PassManager pm;
-    pm.add(llvm::createAggressiveDCEPass());
-    pm.add(llvm::createBasicAliasAnalysisPass());
-    pm.add(llvm::createInstructionCombiningPass());
-    pm.add(llvm::createReassociatePass());
-    pm.add(llvm::createGVNPass());
-    pm.add(llvm::createCFGSimplificationPass());
+    //llvm::PassManager pm;
+    //pm.add(llvm::createAggressiveDCEPass());
+    //pm.add(llvm::createBasicAliasAnalysisPass());
+    //pm.add(llvm::createInstructionCombiningPass());
+    //pm.add(llvm::createReassociatePass());
+    //pm.add(llvm::createGVNPass());
+    //pm.add(llvm::createCFGSimplificationPass());
     assert(llvm::verifyModule(module));
-    pm.run(*module);
+    //pm.run(*module);
 }
 
 void Program::createRuntimeDeclarations(llvm::Module * module) {
@@ -653,8 +572,8 @@ void Program::createRuntimeDeclarations(llvm::Module * module) {
     args.clear();
     args.push_back(stackTy);
     args.push_back(llvm::Type::getInt32Ty(context));
-    llvm::FunctionType * stackHasLengthTy = llvm::FunctionType::get(llvm::Type::getInt8Ty(context), args, false);
-    stackHasLength = llvm::Function::Create(stackHasLengthTy, llvm::Function::ExternalLinkage, "stack_has_length", module);
+    llvm::FunctionType * stackHasLengthTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(context), args, false);
+    stackHasLengthFn = llvm::Function::Create(stackHasLengthTy, llvm::Function::ExternalLinkage, "stack_has_length", module);
 
     
     // logStuff
@@ -669,7 +588,7 @@ void Program::createRuntimeDeclarations(llvm::Module * module) {
     logStuffFn = llvm::Function::Create(logStuffFnTy, llvm::Function::ExternalLinkage, "log_stuff", module);
 }
  
-Program::CodelExtrema::CodelExtrema() {
+Program::ColorBlockExtrema::ColorBlockExtrema() {
     for (int dp = 0; dp < 4; dp++) {
         for (int cc = 0; cc < 2; cc++) {
             directions[dp][cc] = std::make_pair(-1, -1);
@@ -677,7 +596,7 @@ Program::CodelExtrema::CodelExtrema() {
     }
 }
 
-void Program::CodelExtrema::update(pair<int, int> location, int dp, int cc) {
+void Program::ColorBlockExtrema::update(pair<int, int> location, int dp, int cc) {
     pair<int, int> & current = directions[dp][cc];
     int xcmp = location.first - current.first;
     int ycmp = location.second - current.second;

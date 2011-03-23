@@ -1,5 +1,5 @@
-#ifndef __CODEL__HPP__
-#define __CODEL__HPP__
+#ifndef __COLOR_BLOCK__HPP__
+#define __COLOR_BLOCK__HPP__
 
 #include <stddef.h>
 #include "colors.hpp"
@@ -9,9 +9,9 @@ namespace pietc {
 
 class Transition;
 
-class Codel {
+class ColorBlock {
 public:
-    Codel(color_t color, std::string id) : color(color), id(id) {
+    ColorBlock(color_t color, std::string id) : color(color), id(id) {
         size = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 2; j++) {
@@ -28,4 +28,4 @@ public:
 
 } // namespace pietc
 
-#endif // __CODEL__HPP__
+#endif // __COLOR_BLOCK__HPP__

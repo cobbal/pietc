@@ -1,6 +1,6 @@
 namespace pietc {
 
-class Codel;
+class ColorBlock;
 
 class Transition {
 public:
@@ -10,8 +10,8 @@ public:
         exit
     };
 
-    Codel* from;
-    Codel* to;
+    ColorBlock* from;
+    ColorBlock* to;
     OperationType opType;
 
     int obstacleTurnsDp;

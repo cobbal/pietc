@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		E8727B3F1333C3CB004B893B /* DwarfDebugGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8727B3D1333C3CB004B893B /* DwarfDebugGenerator.cpp */; };
-		E8F25DE71331794B0023A7B9 /* Codel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DE31331794B0023A7B9 /* Codel.cpp */; };
+		E8F25DE71331794B0023A7B9 /* ColorBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DE31331794B0023A7B9 /* ColorBlock.cpp */; };
 		E8F25DE81331794B0023A7B9 /* colors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DE51331794B0023A7B9 /* colors.cpp */; };
 		E8F25DEF133179560023A7B9 /* pietc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DE9133179560023A7B9 /* pietc.cpp */; };
 		E8F25DF0133179560023A7B9 /* Program.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F25DEA133179560023A7B9 /* Program.cpp */; };
@@ -31,16 +31,16 @@
 		E8727B3D1333C3CB004B893B /* DwarfDebugGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DwarfDebugGenerator.cpp; path = src/DwarfDebugGenerator.cpp; sourceTree = SOURCE_ROOT; };
 		E8727B3E1333C3CB004B893B /* DwarfDebugGenerator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DwarfDebugGenerator.hpp; path = src/DwarfDebugGenerator.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DCE1331790A0023A7B9 /* pietc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pietc; sourceTree = BUILT_PRODUCTS_DIR; };
-		E8F25DE31331794B0023A7B9 /* Codel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Codel.cpp; path = src/Codel.cpp; sourceTree = SOURCE_ROOT; };
-		E8F25DE41331794B0023A7B9 /* Codel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Codel.hpp; path = src/Codel.hpp; sourceTree = SOURCE_ROOT; };
+		E8F25DE31331794B0023A7B9 /* ColorBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ColorBlock.cpp; path = src/ColorBlock.cpp; sourceTree = SOURCE_ROOT; };
+		E8F25DE41331794B0023A7B9 /* ColorBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; name = ColorBlock.hpp; path = src/ColorBlock.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DE51331794B0023A7B9 /* colors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = colors.cpp; path = src/colors.cpp; sourceTree = SOURCE_ROOT; };
-		E8F25DE61331794B0023A7B9 /* colors.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = colors.hpp; path = src/colors.hpp; sourceTree = SOURCE_ROOT; };
+		E8F25DE61331794B0023A7B9 /* colors.hpp */ = {isa = PBXFileReference; fileEncoding = 4; name = colors.hpp; path = src/colors.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DE9133179560023A7B9 /* pietc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pietc.cpp; path = src/pietc.cpp; sourceTree = SOURCE_ROOT; };
-		E8F25DEA133179560023A7B9 /* Program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Program.cpp; path = src/Program.cpp; sourceTree = SOURCE_ROOT; };
-		E8F25DEB133179560023A7B9 /* Program.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Program.hpp; path = src/Program.hpp; sourceTree = SOURCE_ROOT; };
+		E8F25DEA133179560023A7B9 /* Program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = Program.cpp; path = src/Program.cpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		E8F25DEB133179560023A7B9 /* Program.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = Program.hpp; path = src/Program.hpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		E8F25DEC133179560023A7B9 /* ProgramImage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProgramImage.cpp; path = src/ProgramImage.cpp; sourceTree = SOURCE_ROOT; };
 		E8F25DED133179560023A7B9 /* ProgramImage.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProgramImage.hpp; path = src/ProgramImage.hpp; sourceTree = SOURCE_ROOT; };
-		E8F25DEE133179560023A7B9 /* Transition.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Transition.hpp; path = src/Transition.hpp; sourceTree = SOURCE_ROOT; };
+		E8F25DEE133179560023A7B9 /* Transition.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = Transition.hpp; path = src/Transition.hpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		E8F25E26133179810023A7B9 /* png++.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "png++.xcodeproj"; path = "src/png++/png++.xcodeproj"; sourceTree = SOURCE_ROOT; };
 		E8F657511332919E00129928 /* pietRuntime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pietRuntime.c; path = runtime/pietRuntime.c; sourceTree = SOURCE_ROOT; };
 		E8F6575E1332942C00129928 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = runtime/Makefile; sourceTree = SOURCE_ROOT; };
@@ -78,8 +78,8 @@
 			isa = PBXGroup;
 			children = (
 				E8F25DEE133179560023A7B9 /* Transition.hpp */,
-				E8F25DE41331794B0023A7B9 /* Codel.hpp */,
-				E8F25DE31331794B0023A7B9 /* Codel.cpp */,
+				E8F25DE41331794B0023A7B9 /* ColorBlock.hpp */,
+				E8F25DE31331794B0023A7B9 /* ColorBlock.cpp */,
 				E8F25DE61331794B0023A7B9 /* colors.hpp */,
 				E8F25DE51331794B0023A7B9 /* colors.cpp */,
 				E8F25DEB133179560023A7B9 /* Program.hpp */,
@@ -183,7 +183,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E8F25DE71331794B0023A7B9 /* Codel.cpp in Sources */,
+				E8F25DE71331794B0023A7B9 /* ColorBlock.cpp in Sources */,
 				E8F25DE81331794B0023A7B9 /* colors.cpp in Sources */,
 				E8F25DEF133179560023A7B9 /* pietc.cpp in Sources */,
 				E8F25DF0133179560023A7B9 /* Program.cpp in Sources */,

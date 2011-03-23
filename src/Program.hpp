@@ -1,7 +1,7 @@
 #ifndef __PROGRAM_H__
 #define __PROGRAM_H__
 
-#include "Codel.hpp"
+#include "ColorBlock.hpp"
 #include "Transition.hpp"
 #include "ProgramImage.hpp"
 #include <list>
@@ -22,35 +22,32 @@ namespace pietc {
         
     private:
         // Types
-        struct CodelExtrema {
-            CodelExtrema();
+        struct ColorBlockExtrema {
+            ColorBlockExtrema();
             void update(std::pair<int, int> location, int dp, int cc);
             
             std::pair<int, int> directions[4][2];
         };
         
         // Common variables
-        std::list<Codel> codels;
+        std::list<ColorBlock> colorBlocks;
         std::list<Transition> transitions;
         
         // Image variables
         ProgramImage image;
         const unsigned int width;
         const unsigned int height;
-        std::map<Codel *, CodelExtrema> extremas;
-        std::map<std::pair<int, int>, Codel *> componentMap;
+        std::map<ColorBlock *, ColorBlockExtrema> extremas;
+        std::map<std::pair<int, int>, ColorBlock *> componentMap;
         
         // Code generation variables
         llvm::LLVMContext context;
         
-        llvm::BasicBlock * runtimeError;
-        llvm::AllocaInst * dpVar;
-        llvm::AllocaInst * ccVar;
         llvm::AllocaInst * stackVar;
         
         const llvm::Type * stackValueTy;
         const llvm::Type * stackTy;
-        std::map<Codel *, llvm::BasicBlock *> codelBlocks;
+        std::map<std::pair<ColorBlock *, int>, llvm::BasicBlock *> transitionBlocks;
         
         // Generated functions
         llvm::Function * mainFn;
@@ -66,30 +63,27 @@ namespace pietc {
         llvm::Function * putintFn;
         llvm::Function * getintFn;
         llvm::Function * logStuffFn;
-        llvm::Function * stackHasLength;
+        llvm::Function * stackHasLengthFn;
+        llvm::BasicBlock * runtimeError;
         
         // LLVM Intrinsic functions
         llvm::Function * debugDeclareFn;
         llvm::Function * debugValueFn;
         
         // Image functions
-        void explore(int x, int y, Codel * codel);
-        void computeCodelTransitions(Codel * codel);
-        bool computeTransition(Codel * codel, int dp, int cc, Transition & tran);
-        int indexOfCodel(Codel * codel);
+        void explore(int x, int y, ColorBlock * colorBlock);
+        void computeColorBlockTransitions(ColorBlock * colorBlock);
+        bool computeTransition(ColorBlock * colorBlock, int dp, int cc, Transition & tran);
+        int indexOfColorBlock(ColorBlock * colorBlock);
         
         // Static code generation (the runtime)
         void createRuntimeDeclarations(llvm::Module * module);
-        /*
-        void createMemoryDeclarations(llvm::Module * module);
-        void createConsFn(llvm::Module * module);
-        void createCarFn(llvm::Module * module);
-        void createCdrFn(llvm::Module * module);
-         */
         
         // Code generation functions
-        void generateCodelCode(Codel * codel, llvm::IRBuilder<true> & builder, llvm::Module * module);
-        void generateOperationCode(int operation, int codelSize, llvm::IRBuilder<true> & builder);
+        llvm::BasicBlock * generateReachableBlocks(ColorBlock * currentBlock, int dp, int cc);
+        //void generateColorBlockCode(ColorBlock * colorBlock, llvm::IRBuilder<true> & builder, llvm::Module * module);
+        void generateOp(int operation, int ColorBlockSize, llvm::IRBuilder<true> & builder);
+        std::vector<llvm::BasicBlock *> generateBranchOp(int operation, llvm::IRBuilder<true> & builder);
         
         void optimize(llvm::Module * module);
         
