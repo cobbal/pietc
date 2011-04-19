@@ -1,0 +1,10 @@
+This is an implementation of the piet programming language described
+at http://www.dangermouse.net/esoteric/piet.html
+
+There exist several piet interpreters, but I suspect that the reason
+this elegant language has caught on in the enterprise setting is
+primarily effeciency concerns. Compiling piet programs will help to
+remove this primary obstacle to piet adoption.
+
+This really is still in major hack stage, mostly I'm just doing it
+have fun with llvm.
