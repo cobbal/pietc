@@ -5,7 +5,9 @@
 #include "Transition.hpp"
 #include "ProgramImage.hpp"
 #include <list>
+#include <set>
 #include <map>
+#include <boost/tuple/tuple.hpp>
 #include <llvm/DerivedTypes.h>
 #include <llvm/LLVMContext.h>
 #include <llvm/Module.h>
@@ -74,14 +76,16 @@ namespace pietc {
         void explore(int x, int y, ColorBlock * colorBlock);
         void computeColorBlockTransitions(ColorBlock * colorBlock);
         bool computeTransition(ColorBlock * colorBlock, int dp, int cc, Transition & tran);
+        bool whiteCodelSlide(ColorBlock ** ColorBlock, int * dp, int * cc, int x, int y);
+        bool whiteCodelSlide(ColorBlock ** ColorBlock, int * dp, int * cc, 
+                             std::set<boost::tuple<int, int, int> > * visited, int x, int y);
         int indexOfColorBlock(ColorBlock * colorBlock);
         
         // Static code generation (the runtime)
         void createRuntimeDeclarations(llvm::Module * module);
         
         // Code generation functions
-        llvm::BasicBlock * generateReachableBlocks(ColorBlock * currentBlock, int dp, int cc);
-        //void generateColorBlockCode(ColorBlock * colorBlock, llvm::IRBuilder<true> & builder, llvm::Module * module);
+        llvm::BasicBlock * generateReachableBlocks(ColorBlock * currentBlock, int dp, int cc, llvm::Module * module);
         void generateOp(int operation, int ColorBlockSize, llvm::IRBuilder<true> & builder);
         std::vector<llvm::BasicBlock *> generateBranchOp(int operation, llvm::IRBuilder<true> & builder);
         

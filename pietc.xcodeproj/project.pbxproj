@@ -32,9 +32,9 @@
 		E8727B3E1333C3CB004B893B /* DwarfDebugGenerator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DwarfDebugGenerator.hpp; path = src/DwarfDebugGenerator.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DCE1331790A0023A7B9 /* pietc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pietc; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8F25DE31331794B0023A7B9 /* ColorBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ColorBlock.cpp; path = src/ColorBlock.cpp; sourceTree = SOURCE_ROOT; };
-		E8F25DE41331794B0023A7B9 /* ColorBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; name = ColorBlock.hpp; path = src/ColorBlock.hpp; sourceTree = SOURCE_ROOT; };
+		E8F25DE41331794B0023A7B9 /* ColorBlock.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ColorBlock.hpp; path = src/ColorBlock.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DE51331794B0023A7B9 /* colors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = colors.cpp; path = src/colors.cpp; sourceTree = SOURCE_ROOT; };
-		E8F25DE61331794B0023A7B9 /* colors.hpp */ = {isa = PBXFileReference; fileEncoding = 4; name = colors.hpp; path = src/colors.hpp; sourceTree = SOURCE_ROOT; };
+		E8F25DE61331794B0023A7B9 /* colors.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = colors.hpp; path = src/colors.hpp; sourceTree = SOURCE_ROOT; };
 		E8F25DE9133179560023A7B9 /* pietc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pietc.cpp; path = src/pietc.cpp; sourceTree = SOURCE_ROOT; };
 		E8F25DEA133179560023A7B9 /* Program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = Program.cpp; path = src/Program.cpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		E8F25DEB133179560023A7B9 /* Program.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = Program.hpp; path = src/Program.hpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };

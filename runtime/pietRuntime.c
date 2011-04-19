@@ -84,12 +84,12 @@ int stack_has_length(stack stk, int length) {
     int i;
     for (i = 0; i < length; i++) {
         if (!node) {
-            fprintf(stderr, "stack does _NOT_ have required length of %d\n", length);
+            //fprintf(stderr, "stack does _NOT_ have required length of %d\n", length);
             return 0;
         }
         node = cdr(node);
     }
-    fprintf(stderr, "stack has required length of %d\n", length);
+    //fprintf(stderr, "stack has required length of %d\n", length);
     return 1;
 }
 
@@ -122,6 +122,21 @@ void roll_stack(stack stk, stack_value rollCount, stack_value depth) {
     roller->cdr = bottom->cdr;
     bottom->cdr = *stk;
     *stk = temp;
+}
+
+stack_value pietc_getchar() {
+    printf("<input char: ");
+    
+    char c;
+    scanf("%c", &c);
+
+    printf(">");
+    return c;
+}
+
+void pietc_putchar(stack_value ch) {
+    printf("%c", (char)ch);
+    fflush(stdout);
 }
 
 void putint(stack_value val) {

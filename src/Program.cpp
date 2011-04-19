@@ -1,7 +1,10 @@
 #include "Program.hpp"
 #include "DwarfDebugGenerator.hpp"
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/foreach.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include <iostream>
 #include <fstream>
 #include <assert.h>
@@ -22,12 +25,18 @@ namespace pietc {
 }
 #endif
 
+using boost::tuple;
 using boost::shared_ptr;
+using boost::scoped_ptr;
 using std::list;
 using std::map;
+using std::multimap;
 using std::pair;
 using std::string;
 using std::vector;
+using std::set;
+using std::cerr;
+using std::endl;
 
 void Program::explore(int x, int y, ColorBlock * block) {
     if (componentMap.count(std::make_pair(x, y)) > 0) {
@@ -50,12 +59,65 @@ void Program::explore(int x, int y, ColorBlock * block) {
     }
 }
 
-bool Program::computeTransition(ColorBlock * ColorBlock, int dp, int cc, Transition & tran) {
-    if (ColorBlock->color == colors::white || ColorBlock->color == colors::black) {
+bool Program::whiteCodelSlide(ColorBlock ** block, int * dp, int * cc, int x, int y) {
+    set<tuple<int, int, int> > visited;
+    return whiteCodelSlide(block, dp, cc, &visited, x, y);
+}
+
+bool Program::whiteCodelSlide(ColorBlock ** block, int * dp, int * cc, 
+                              set<tuple<int, int, int> > * visited, int x, int y) {
+    /*
+    cerr << "whiteCodelSlide(";
+    cerr << *dp << ", ";
+    cerr << *cc << ", ";
+    cerr << "{" << visited->size() << "}, ";
+    cerr << x << ", ";
+    cerr << y << ") = " << image.get(x, y) << endl;
+    */
+    
+    if (image.get(x, y) != colors::white) {
+        *block = componentMap[std::make_pair(x, y)];
+        //cerr << "Found block " << (*block)->id << ". Returning true." << endl;
+        return true;
+    }
+    
+    if (visited->count(boost::make_tuple(x, y, *dp))) {
+        //cerr << "Been here before. returning false." << endl;
+        return false;
+    }
+    visited->insert(boost::make_tuple(x, y, *dp));
+    const static int steps[4][2] = {
+        { 1, 0}, {0,  1},
+        {-1, 0}, {0, -1}
+    };
+    
+    int xstep = steps[*dp][0];
+    int ystep = steps[*dp][1];
+    
+    if (0 > x + xstep || x + xstep >= image.get_width() ||
+        0 > y + ystep || y + ystep >= image.get_height() ||
+        image.get(x + xstep, y + ystep) == colors::black) {
+        
+        // flip cc and rotate dp
+        //cerr << "hit a boundary" << endl;
+        *cc = !*cc;
+        *dp = (*dp + 1) % 4;
+    } else {
+        //cerr << "moving forward" << endl;
+        x += xstep;
+        y += ystep;
+    }
+
+    // tail recurse
+    return whiteCodelSlide(block, dp, cc, visited, x, y);
+}
+
+bool Program::computeTransition(ColorBlock * block, int dp, int cc, Transition & tran) {
+    if (block->color == colors::white || block->color == colors::black) {
         return false;
     }
     
-    tran.from = ColorBlock;
+    tran.from = block;
     
     // Try to move in gray-code-like rotations
     for (int rotation = 0; rotation < 8; rotation++) {
@@ -66,7 +128,7 @@ bool Program::computeTransition(ColorBlock * ColorBlock, int dp, int cc, Transit
         int newCc = (cc + ccFlip) % 2;
         tran.obstacleTurnsDp = dpSpin;
         tran.obstacleFlipCc = ccFlip;
-        pair<int, int> newLoc = extremas[ColorBlock].directions[newDp][newCc];
+        pair<int, int> newLoc = extremas[block].directions[newDp][newCc];
         
         const static int steps[4][2] = {
             { 1, 0}, {0,  1},
@@ -77,27 +139,42 @@ bool Program::computeTransition(ColorBlock * ColorBlock, int dp, int cc, Transit
         
         tran.opType = Transition::normal;
         
-        while (true) {
-            newLoc.first += xstep;
-            newLoc.second += ystep;
+        newLoc.first += xstep;
+        newLoc.second += ystep;
+        
+        if (newLoc.first < 0 || newLoc.first >= width || 
+            newLoc.second < 0 || newLoc.second >= height) {
+
+            tran.to = NULL;
+            continue;
+        }
+        color_t newColor = image.get(newLoc.first, newLoc.second);
+        if (newColor == colors::black) {
+            tran.to = NULL;
+            continue;
+        }
+        
+        if (newColor != colors::white) {
+            // We have found our transition
+            tran.to = componentMap[newLoc];
             
-            if (newLoc.first < 0 || newLoc.first >= width || 
-                newLoc.second < 0 || newLoc.second >= height) {
-                
-                break;
-            }
-            color_t newColor = image.get(newLoc.first, newLoc.second);
-            if (newColor == colors::black) {
-                tran.to = NULL;
-                break;
-            }
+            //std::cerr << tran.from->id << "(" << dp << ", " << cc << ")"
+            //std::cerr << " ==" << tran.obstacleTurnsDp << "=" << tran.obstacleFlipCc << "==> ";
+            //std::cerr << tran.to->id << std::endl;
             
-            if (newColor != colors::white) {
-                // We have found our transition
-                tran.to = componentMap[newLoc];
-                return true;
-            }
+            return true;
+        } else if (whiteCodelSlide(&tran.to, &newDp, &newCc, newLoc.first, newLoc.second)) {
+            // We have found out transition (through a white block)
+            
             tran.opType = Transition::noop;
+            tran.obstacleTurnsDp = (newDp - dp + 4) % 4;
+            tran.obstacleFlipCc = (newCc - cc + 2) % 2;
+            
+            //std::cerr << tran.from->id << "(" << dp << ", " << cc << ")"
+            //std::cerr << " --" << tran.obstacleTurnsDp << "-" << tran.obstacleFlipCc << "--> ";
+            //std::cerr << tran.to->id << std::endl;
+            
+            return true;
         }
     }
     
@@ -238,7 +315,7 @@ llvm::Module * Program::codegen() {
     stackVar = builder.CreateAlloca(stackTy, 0, "stk");
     builder.CreateStore(builder.CreateCall(newStackFn), stackVar);
     
-    llvm::BasicBlock * start = generateReachableBlocks(&colorBlocks.front(), 0, 0);
+    llvm::BasicBlock * start = generateReachableBlocks(&colorBlocks.front(), 0, 0, module);
     
     builder.SetInsertPoint(mainSetup);
     builder.CreateBr(start);
@@ -268,7 +345,7 @@ llvm::Constant * Program::constString(const char * str) {
     return llvm::ConstantArray::get(context, llvm::StringRef::StringRef(str));
 }
 
-llvm::BasicBlock * Program::generateReachableBlocks(ColorBlock * block, int dp, int cc) {
+llvm::BasicBlock * Program::generateReachableBlocks(ColorBlock * block, int dp, int cc, llvm::Module * module) {
     if (transitionBlocks.count(std::make_pair(block, dp * 2 + cc)) > 0) {
         return transitionBlocks[std::make_pair(block, dp * 2 + cc)];
     }
@@ -276,9 +353,9 @@ llvm::BasicBlock * Program::generateReachableBlocks(ColorBlock * block, int dp, 
     llvm::IRBuilder<true> builder(context);
     
     Transition * tran = block->transitions[dp][cc];
-    if ((tran->obstacleTurnsDp || tran->obstacleFlipCc) && tran->opType != Transition::exit) {
-        return generateReachableBlocks(block, (dp + tran->obstacleTurnsDp) % 4, (cc + tran->obstacleFlipCc) % 2);
-    }
+    //if ((tran->obstacleTurnsDp || tran->obstacleFlipCc) && tran->opType != Transition::exit) {
+    //    return generateReachableBlocks(block, (dp + tran->obstacleTurnsDp) % 4, (cc + tran->obstacleFlipCc) % 2, module);
+    //}
     
     int operation = 0;
     if (tran->opType == Transition::normal) {
@@ -292,15 +369,52 @@ llvm::BasicBlock * Program::generateReachableBlocks(ColorBlock * block, int dp, 
     
     std::stringstream idStream;
     idStream << block->id + "_" << dpNames[dp] << "_" << ccNames[cc];
-    
+
     llvm::BasicBlock * transitionBlock = llvm::BasicBlock::Create(context, idStream.str(), mainFn);
     transitionBlocks[std::make_pair(block, dp * 2 + cc)] = transitionBlock;
     builder.SetInsertPoint(transitionBlock);
-        
+    
     if (tran->opType == Transition::exit) {
         builder.CreateRet(constInt(0));
+        // cerr << idStream.str() << " ---> exit" << endl;
         return transitionBlock;
     }
+    
+#if EXCESSIVE_LOGGING
+    llvm::Constant * fromArray = constString(tran->from->id.c_str());
+    llvm::GlobalVariable::GlobalVariable * fromGlobal;
+    fromGlobal = new llvm::GlobalVariable::GlobalVariable(*module,
+                                                          fromArray->getType(),
+                                                          true,
+                                                          llvm::Function::PrivateLinkage,
+                                                          fromArray,
+                                                          "");
+    llvm::Value * fromStrPtr = builder.CreateConstGEP2_32(fromGlobal, 0, 0, "fromStrPtr");
+    
+    llvm::Constant * toArray = constString(tran->to->id.c_str());
+    llvm::GlobalVariable::GlobalVariable * toGlobal;
+    toGlobal = new llvm::GlobalVariable::GlobalVariable(*module,
+                                                        toArray->getType(),
+                                                        true,
+                                                        llvm::Function::PrivateLinkage,
+                                                        toArray,
+                                                        "");
+    llvm::Value * toStrPtr = builder.CreateConstGEP2_32(toGlobal, 0, 0, "toStrPtr");
+
+    
+    vector<llvm::Value *> logArgs;
+    logArgs.push_back(constInt(operation));
+    logArgs.push_back(fromStrPtr);
+    logArgs.push_back(toStrPtr);
+    logArgs.push_back(constByte(dp));
+    logArgs.push_back(constByte(cc));
+    logArgs.push_back(builder.CreateLoad(stackVar));
+    
+    builder.CreateCall(logStuffFn, logArgs.begin(), logArgs.end());
+#endif
+        
+    dp = (dp + tran->obstacleTurnsDp) % 4;
+    cc = (cc + tran->obstacleFlipCc) % 2;
     
     if (operation == 10 || operation == 11) { // Pointer and switch
         std::vector<llvm::BasicBlock *> branches = generateBranchOp(operation, builder);
@@ -309,14 +423,17 @@ llvm::BasicBlock * Program::generateReachableBlocks(ColorBlock * block, int dp, 
         
         for (int i = 0; i < branches.size(); i++) {
             builder.SetInsertPoint(branches[i]);
-            
-            builder.CreateBr(generateReachableBlocks(tran->to,
-                                                     (dp + (isPointer ? i : 0)) % 4, 
-                                                     (cc + (isPointer ? 0 : i)) % 2));
+
+            int newDp = (dp + (isPointer ? i : 0)) % 4; 
+            int newCc = (cc + (isPointer ? 0 : i)) % 2;
+            // cerr << idStream.str() << " -?" << i << "-> " << tran->to->id << "_" << dpNames[newDp] << "_" << ccNames[newCc] << endl;
+
+            builder.CreateBr(generateReachableBlocks(tran->to, newDp, newCc, module));
         }
     } else { // Non-branching
+        // cerr << idStream.str() << " =" << operation << "=> " << tran->to->id << "_" << dpNames[dp] << "_" << ccNames[cc] << endl;
         generateOp(operation, tran->from->size, builder);
-        builder.CreateBr(generateReachableBlocks(tran->to, dp, cc));
+        builder.CreateBr(generateReachableBlocks(tran->to, dp, cc, module));
     }
 
     return transitionBlock;
@@ -514,9 +631,9 @@ void Program::createRuntimeDeclarations(llvm::Module * module) {
     // IO
     // putchar
     args.clear();
-    args.push_back(llvm::Type::getInt32Ty(context));
-    llvm::FunctionType * putcharFnTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(context), args, false);
-    putcharFn = llvm::Function::Create(putcharFnTy, llvm::Function::ExternalLinkage, "putchar", module);
+    args.push_back(stackValueTy);
+    llvm::FunctionType * putcharFnTy = llvm::FunctionType::get(llvm::Type::getVoidTy(context), args, false);
+    putcharFn = llvm::Function::Create(putcharFnTy, llvm::Function::ExternalLinkage, "pietc_putchar", module);
     
     // putint
     args.clear();
@@ -526,8 +643,8 @@ void Program::createRuntimeDeclarations(llvm::Module * module) {
     
     // getchar
     args.clear();
-    llvm::FunctionType * getcharFnTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(context), false);
-    getcharFn = llvm::Function::Create(getcharFnTy, llvm::Function::ExternalLinkage, "getchar", module);
+    llvm::FunctionType * getcharFnTy = llvm::FunctionType::get(stackValueTy, false);
+    getcharFn = llvm::Function::Create(getcharFnTy, llvm::Function::ExternalLinkage, "pietc_getchar", module);
     
     // getint
     args.clear();

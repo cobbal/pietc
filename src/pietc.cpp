@@ -7,7 +7,7 @@
 #include <fstream>
 
 int main(int argc, char ** argv) {
-    pietc::Program prog("test-images/99bottles.png");
+    pietc::Program prog("test-images/pietquest.png");
     
     std::ofstream outputStream("/Users/acobb/Desktop/test/llvm-ir/output.ll");
     llvm::raw_os_ostream lloutput(outputStream);

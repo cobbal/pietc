@@ -43,7 +43,7 @@ color_t colorFromValue(colors::rgba value)
             (*color_lookup)[colors::white]        = (colors::rgba){0xFF, 0xFF, 0xFF, 0xFF};
             (*color_lookup)[colors::black]        = (colors::rgba){0x00, 0x00, 0x00, 0xFF};
         });
-    std::pair<color_t, float> max(colors::white, 100.0);
+    std::pair<color_t, float> max(colors::white, 100000000.0);
     std::pair<color_t, colors::rgba> key;
     BOOST_FOREACH(key, *color_lookup) {
         float badnessScore = 0;
