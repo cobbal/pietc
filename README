@@ -2,7 +2,7 @@ This is an implementation of the piet programming language described
 at http://www.dangermouse.net/esoteric/piet.html
 
 There exist several piet interpreters, but I suspect that the reason
-this elegant language has caught on in the enterprise setting is
+this elegant language has not caught on in the enterprise setting is
 primarily effeciency concerns. Compiling piet programs will help to
 remove this primary obstacle to piet adoption.
 
