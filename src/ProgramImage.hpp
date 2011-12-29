@@ -2,14 +2,16 @@
 #define __PROGRAM_IMAGE_H__
 
 #include <ostream>
+#include <string>
 #include <boost/shared_array.hpp>
+#include <boost/multi_array.hpp>
 #include "colors.hpp"
 
 namespace pietc {
 
 class ProgramImage {
 public:
-    ProgramImage(const char * filename);
+    ProgramImage(const std::string & filename, int codelSize);
     ~ProgramImage();
 
     unsigned int get_width() const;
@@ -20,7 +22,7 @@ public:
     friend std::ostream &operator<<(std::ostream &stream, const ProgramImage & prog);
 private:
     unsigned int width, height;
-    boost::shared_array<color_t> program;
+    boost::multi_array<color_t, 2> program;
 };
 
 } // namespace pietc

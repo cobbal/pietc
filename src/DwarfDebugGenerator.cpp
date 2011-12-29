@@ -10,6 +10,7 @@
 #include <llvm/Constants.h>
 #include <llvm/Type.h>
 #include <llvm/Metadata.h>
+#include <vector>
 
 namespace pietc { namespace dwarf {
 #if 0
@@ -33,19 +34,19 @@ llvm::MDNode * compilationUnitInfo(llvm::LLVMContext & ctx,
                                const char * flags,
                                int runtimeVersion) {
     
-    llvm::Value * const values[] = {
-        constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_compile_unit), // Tag
-        constInt(ctx, 0), // Unused
-        constInt(ctx, languageId),
-        llvm::MDString::get(ctx, sourceName),
-        llvm::MDString::get(ctx, sourceDirectory),
-        llvm::MDString::get(ctx, producer),
-        constBit(ctx, mainCompileUnit),
-        constBit(ctx, optimized),
-        llvm::MDString::get(ctx, flags),
-        constInt(ctx, runtimeVersion)
-    };
-    return  llvm::MDNode::get(ctx, values, sizeof(values) / sizeof(*values));
+    std::vector<llvm::Value *> values;
+    values.push_back(constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_compile_unit)); // Tag
+    values.push_back(constInt(ctx, 0)); // Unused
+    values.push_back(constInt(ctx, languageId));
+    values.push_back(llvm::MDString::get(ctx, sourceName));
+    values.push_back(llvm::MDString::get(ctx, sourceDirectory));
+    values.push_back(llvm::MDString::get(ctx, producer));
+    values.push_back(constBit(ctx, mainCompileUnit));
+    values.push_back(constBit(ctx, optimized));
+    values.push_back(llvm::MDString::get(ctx, flags));
+    values.push_back(constInt(ctx, runtimeVersion));
+
+    return  llvm::MDNode::get(ctx, values);
 }
 
 
@@ -56,15 +57,15 @@ llvm::MDNode * localVariableInfo(llvm::LLVMContext & ctx,
                                  int lineNumber,
                                  llvm::MDNode * type) {
     
-    llvm::Value * const values[] = {
-        constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_auto_variable), // Tag
-        context,
-        llvm::MDString::get(ctx, name),
-        file,
-        constInt(ctx, lineNumber),
-        type
-    };
-    return  llvm::MDNode::get(ctx, values, sizeof(values) / sizeof(*values));
+    std::vector<llvm::Value *> values;
+    values.push_back(constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_auto_variable)); // Tag
+    values.push_back(context);
+    values.push_back(llvm::MDString::get(ctx, name));
+    values.push_back(file);
+    values.push_back(constInt(ctx, lineNumber));
+    values.push_back(type);
+
+    return  llvm::MDNode::get(ctx, values);
 }
 
 llvm::MDNode * fileInfo(llvm::LLVMContext & ctx,
@@ -72,13 +73,13 @@ llvm::MDNode * fileInfo(llvm::LLVMContext & ctx,
                         const char * fileDirectory,
                         llvm::MDNode * compilationUnit) {
     
-    llvm::Value * const values[] = {
-        constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_file_type), // Tag
-        llvm::MDString::get(ctx, fileName),
-        llvm::MDString::get(ctx, fileDirectory),
-        compilationUnit
-    };
-    return  llvm::MDNode::get(ctx, values, sizeof(values) / sizeof(*values));
+    std::vector<llvm::Value *> values;
+    values.push_back(constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_file_type)); // Tag
+    values.push_back(llvm::MDString::get(ctx, fileName));
+    values.push_back(llvm::MDString::get(ctx, fileDirectory));
+    values.push_back(compilationUnit);
+
+    return  llvm::MDNode::get(ctx, values);
 }
 
 llvm::MDNode * subprogramInfo(llvm::LLVMContext & ctx,
@@ -98,26 +99,26 @@ llvm::MDNode * subprogramInfo(llvm::LLVMContext & ctx,
                               bool optimized,
                               llvm::Function * const function) {
     
-    llvm::Value * const values[] = {
-        constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_subprogram), // Tag   
-        constInt(ctx, 0), // Unused
-        context,
-        llvm::MDString::get(ctx, name),        
-        llvm::MDString::get(ctx, displayName),
-        llvm::MDString::get(ctx, MIPSLinkName),
-        file,
-        constInt(ctx, lineNumber),
-        type,
-        constBit(ctx, isStatic),
-        constBit(ctx, notExtern),
-        constInt(ctx, virtuality),
-        constInt(ctx, virtualIndex),
-        vtableType,
-        constBit(ctx, artificial),
-        constBit(ctx, optimized),
-        (llvm::Value *)function
-    };
-    return  llvm::MDNode::get(ctx, values, sizeof(values) / sizeof(*values));
+    std::vector<llvm::Value *> values;
+    values.push_back(constInt(ctx, llvm::LLVMDebugVersion + llvm::dwarf::DW_TAG_subprogram)); // Tag   
+    values.push_back(constInt(ctx, 0)); // Unused
+    values.push_back(context);
+    values.push_back(llvm::MDString::get(ctx, name));
+    values.push_back(llvm::MDString::get(ctx, displayName));
+    values.push_back(llvm::MDString::get(ctx, MIPSLinkName));
+    values.push_back(file);
+    values.push_back(constInt(ctx, lineNumber));
+    values.push_back(type);
+    values.push_back(constBit(ctx, isStatic));
+    values.push_back(constBit(ctx, notExtern));
+    values.push_back(constInt(ctx, virtuality));
+    values.push_back(constInt(ctx, virtualIndex));
+    values.push_back(vtableType);
+    values.push_back(constBit(ctx, artificial));
+    values.push_back(constBit(ctx, optimized));
+    values.push_back((llvm::Value *)function);
+
+    return  llvm::MDNode::get(ctx, values);
 }
 
 

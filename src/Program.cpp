@@ -18,7 +18,7 @@
 #include <llvm/Analysis/Passes.h>
 #include <llvm/Transforms/Scalar.h>
 
-#define EXCESSIVE_LOGGING 0
+#define EXCESSIVE_LOGGING 1
 
 namespace pietc {
 #if 0 // fix indentation
@@ -37,8 +37,9 @@ using std::vector;
 using std::set;
 using std::cerr;
 using std::endl;
+using std::flush;
 
-void Program::explore(int x, int y, ColorBlock * block) {
+void Program::dfs(int x, int y, ColorBlock * block) {
     if (componentMap.count(std::make_pair(x, y)) > 0) {
         return;
     }
@@ -46,16 +47,16 @@ void Program::explore(int x, int y, ColorBlock * block) {
     block->size++;
     
     if (x + 1 < width && image.get(x, y) == image.get(x + 1, y)) {
-        explore(x + 1, y, block);
+        dfs(x + 1, y, block);
     }
     if (x - 1 >= 0 && image.get(x, y) == image.get(x - 1, y)) {
-        explore(x - 1, y, block);
+        dfs(x - 1, y, block);
     }
     if (y + 1 < height && image.get(x, y) == image.get(x, y + 1)) {
-        explore(x, y + 1, block);
+        dfs(x, y + 1, block);
     }
     if (y - 1 >= 0 && image.get(x, y) == image.get(x, y - 1)) {
-        explore(x, y - 1, block);
+        dfs(x, y - 1, block);
     }
 }
 
@@ -208,12 +209,11 @@ int Program::indexOfColorBlock(ColorBlock * block) {
     return -1;
 }
 
-Program::Program(const char * filename) :
-image(filename), 
+Program::Program(const std::string & filename, int codelSize, llvm::LLVMContext & context) :
+context(context),
+image(filename, codelSize),
 width(image.get_width()),
 height(image.get_height()) {
-    
-    //std::cout << image << std::endl;
 
     int idCounter = 0;
     // do a depth first search to discover connected components
@@ -227,7 +227,7 @@ height(image.get_height()) {
                 idStream << "ColorBlock_" << idCounter++ << "_" << colorName(color);
 
                 colorBlocks.push_back(ColorBlock(color, idStream.str()));
-                explore(x, y, &colorBlocks.back());
+                dfs(x, y, &colorBlocks.back());
             }
             //std::cout << std::setw(3) << indexOfColorBlock(componentMap[pos]);
         }
@@ -243,15 +243,22 @@ height(image.get_height()) {
         }
     }
     
+    int i = 0;
+    double tickLoc = colorBlocks.size() / 25.0;
     BOOST_FOREACH(ColorBlock & block, colorBlocks) {
+        if (fmod(i++, tickLoc) < 1) {
+            cerr << '.' << flush;
+        }
         computeColorBlockTransitions(&block);
     }
     
-    std::ofstream viz("out.dot");
-    
     map<string, list<string> > edges;
-    
+    i = 0;
+    tickLoc = transitions.size() / 25.0;
     BOOST_FOREACH(Transition & tran, transitions) {
+        if (fmod(i++, tickLoc) < 1) {
+            cerr << '.' << flush;
+        }
         std::stringstream edge;
         edge << "    \"" << indexOfColorBlock(tran.from) << " - " << colorName(tran.from->color) << "\" -> ";
         if (tran.to) {
@@ -280,7 +287,8 @@ height(image.get_height()) {
             edges[edge.str()];
         }
     }
-    
+#if 0
+    std::ofstream viz("out.dot");
     viz << "digraph \"" << filename << "\" {" << std::endl;
     typedef const pair<string, list<string> > edgePair;
     BOOST_FOREACH(edgePair & e, edges) {
@@ -294,12 +302,12 @@ height(image.get_height()) {
     }
     viz << "}" << std::endl;
     viz.close();
+#endif
 }
 
-llvm::Module * Program::codegen() {
+void Program::codegen(llvm::Module * module) {
     transitionBlocks.clear();
     
-    llvm::Module * module = new llvm::Module("pietc", context);
     stackValueTy = llvm::Type::getInt32Ty(context);
     
     createRuntimeDeclarations(module);
@@ -325,8 +333,6 @@ llvm::Module * Program::codegen() {
 
     
     optimize(module);
-    
-    return module;
 }
 
 llvm::ConstantInt * Program::constInt(int x) {
@@ -410,7 +416,7 @@ llvm::BasicBlock * Program::generateReachableBlocks(ColorBlock * block, int dp, 
     logArgs.push_back(constByte(cc));
     logArgs.push_back(builder.CreateLoad(stackVar));
     
-    builder.CreateCall(logStuffFn, logArgs.begin(), logArgs.end());
+    builder.CreateCall(logStuffFn, logArgs);
 #endif
         
     dp = (dp + tran->obstacleTurnsDp) % 4;
@@ -623,10 +629,11 @@ void Program::optimize(llvm::Module * module) {
 }
 
 void Program::createRuntimeDeclarations(llvm::Module * module) {
-    stackTy = llvm::PointerType::getUnqual(llvm::OpaqueType::get(context));
-    module->addTypeName("stack", stackTy);
+    llvm::StructType * listNodeTy = llvm::StructType::create(context, "_list_node");
+    llvm::PointerType * listTy = llvm::PointerType::getUnqual(listNodeTy);
+    stackTy = llvm::PointerType::getUnqual(listTy);
     
-    vector<const llvm::Type *> args;
+    vector<llvm::Type *> args;
     
     // IO
     // putchar

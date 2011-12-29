@@ -1,26 +1,98 @@
 #include "ProgramImage.hpp"
-#include "png++/png.hpp"
+#include <png.h>
 #include <iomanip>
+#include <iostream>
 #include <fstream>
 #include <dispatch/dispatch.h>
+#include <boost/scoped_array.hpp>
+#include <setjmp.h>
 #include <map>
 
+using std::cerr;
 using std::endl;
+using boost::scoped_array;
+using boost::multi_array;
 
 namespace pietc {
+        
+static void __attribute__((noreturn)) longjmp_wrapper(jmp_buf env, int val);
+    
+ProgramImage::ProgramImage(const std::string & filename, int codelSize) {    
+    FILE * fp = fopen(filename.c_str(), "rb");
+    if (!fp) {
+        cerr << "Error: could not open \"" << filename << "\"" << endl;
+        exit(1);
+    }
+    
+    png_byte header[8];
+    fread((char *)header, 1, 8, fp);
+    if (png_sig_cmp(header, 0, 8)) {
+        cerr << "Error: \"" << filename << "\"" << " does not appear to be a PNG file." << endl;
+        exit(1);
+    }
+    
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        cerr << "Error: libpng failed to initialize" << endl;
+        exit(1);
+    }
+    
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        cerr << "Error: libpng failed to initialize" << endl;
+    }
+    
+    // can't use png_jumpbuf here due to conflicting types for longjmp
+    if (setjmp(*png_set_longjmp_fn(png_ptr, longjmp_wrapper, sizeof(jmp_buf)))) {
+        cerr << "Error: problem reading PNG file" << endl;
+        exit(1);
+    }
+    
+    png_init_io(png_ptr, fp);
+    png_set_sig_bytes(png_ptr, 8);
+    
+    png_read_info(png_ptr, info_ptr);
+    
+    int image_width = png_get_image_width(png_ptr, info_ptr);
+    int image_height = png_get_image_height(png_ptr, info_ptr);
+    
+    png_set_palette_to_rgb(png_ptr);
+    png_set_add_alpha(png_ptr, 0xff, PNG_FILLER_AFTER);
+    png_read_update_info(png_ptr, info_ptr);
+    
+    multi_array<png_byte, 2> image_data(boost::extents[image_height][png_get_rowbytes(png_ptr, info_ptr)]);
 
-ProgramImage::ProgramImage(const char * filename) {
-    const png::image<png::rgba_pixel> image(filename);
-    const png::pixel_buffer<png::rgba_pixel> & buf = image.get_pixbuf();
-    width = buf.get_width();
-    height = buf.get_height();
-    program.reset(new color_t[width * height]);
+    scoped_array<png_bytep> rows(new png_bytep[image_height]);
+    for (int i = 0; i < image_height; i++) {
+        rows[i] = &image_data[i][0];
+    }
+    
+    png_read_image(png_ptr, rows.get());
+    
+    fclose(fp);
+    
+    width = image_width / codelSize;
+    height = image_height / codelSize;
+    
+    program.resize(boost::extents[height][width]);
     
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            const png::rgba_pixel & pixel = buf[y][x];
-            program[width * y + x] =
-            colorFromValue((colors::rgba){pixel.red, pixel.green, pixel.blue, pixel.alpha});
+            double components[4] = {0};
+            for (int i = 0; i < codelSize; i++) {
+                for (int j = 0; j < codelSize; j++) {
+                    components[0] += image_data[codelSize * y + i][4 * (codelSize * x + j) + 0];
+                    components[1] += image_data[codelSize * y + i][4 * (codelSize * x + j) + 1];
+                    components[2] += image_data[codelSize * y + i][4 * (codelSize * x + j) + 2];
+                    components[3] += image_data[codelSize * y + i][4 * (codelSize * x + j) + 3];
+                }
+            }
+            colors::rgba codel;
+            codel.red   = components[0] / (codelSize * codelSize);
+            codel.green = components[1] / (codelSize * codelSize);
+            codel.blue  = components[2] / (codelSize * codelSize);
+            codel.alpha = components[3] / (codelSize * codelSize);
+            program[y][x] = colorFromValue(codel);
         }
     }
     
@@ -70,9 +142,9 @@ ProgramImage::ProgramImage(const char * filename) {
         for (int x = 0; x < width; x++) {
             
             dbgHTML << "<td style=\"background-color: rgb(";
-            dbgHTML << (int)(*color_lookup)[program[width * y + x]].red << ", ";
-            dbgHTML << (int)(*color_lookup)[program[width * y + x]].green << ", ";
-            dbgHTML << (int)(*color_lookup)[program[width * y + x]].blue;
+            dbgHTML << (int)(*color_lookup)[program[y][x]].red << ", ";
+            dbgHTML << (int)(*color_lookup)[program[y][x]].green << ", ";
+            dbgHTML << (int)(*color_lookup)[program[y][x]].blue;
             dbgHTML << ");\"></td>";
         }
         dbgHTML << endl << "  </tr>" << endl;
@@ -94,7 +166,7 @@ unsigned int ProgramImage::get_height() const {
 }
 
 const color_t & ProgramImage::get(unsigned int x, unsigned int y) const {
-    return program[width * y + x];
+    return program[y][x];
 }
 
 
@@ -102,7 +174,7 @@ std::ostream &operator<<(std::ostream &stream, const ProgramImage & prog) {
     std::ios_base::fmtflags originalFormat = stream.flags();
     for (int y = 0; y < prog.height; y++) {
         for (int x = 0; x < prog.width; x++) {
-            stream << std::setw(3) << prog.program[y * prog.width + x];
+            stream << std::setw(3) << prog.program[y][x];
         }
         stream << std::endl;
     }
@@ -111,4 +183,12 @@ std::ostream &operator<<(std::ostream &stream, const ProgramImage & prog) {
     return stream;
 }
 
+// For some reason, longjmp isn't declared as noreturn, so we wrap it in a noreturn function
+static void __attribute__((noreturn)) longjmp_wrapper(jmp_buf env, int val) {
+    longjmp(env, val);
+    
+    assert(false);
+    exit(1);
+}
+    
 } // namespace pietc

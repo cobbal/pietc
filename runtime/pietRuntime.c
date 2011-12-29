@@ -125,12 +125,12 @@ void roll_stack(stack stk, stack_value rollCount, stack_value depth) {
 }
 
 stack_value pietc_getchar() {
-    printf("<input char: ");
+    //printf("<input char: ");
     
     char c;
     scanf("%c", &c);
 
-    printf(">");
+    //printf(">");
     return c;
 }
 
@@ -145,9 +145,9 @@ void putint(stack_value val) {
 
 stack_value getint() {
     int a;
-    printf("<input int: ");
+    //printf("<input int: ");
     scanf("%d", &a);
-    puts(">");
+    //puts(">");
     return a;
 }
 

@@ -1,6 +1,7 @@
 #ifndef __PROGRAM_H__
 #define __PROGRAM_H__
 
+#include <stdint.h>
 #include "ColorBlock.hpp"
 #include "Transition.hpp"
 #include "ProgramImage.hpp"
@@ -19,8 +20,8 @@ namespace pietc {
     
     class Program {
     public:
-        Program(const char * filename);
-        llvm::Module * codegen();
+        Program(const std::string & filename, int codelSize, llvm::LLVMContext & context);
+        void codegen(llvm::Module * mod);
         
     private:
         // Types
@@ -43,12 +44,12 @@ namespace pietc {
         std::map<std::pair<int, int>, ColorBlock *> componentMap;
         
         // Code generation variables
-        llvm::LLVMContext context;
+        llvm::LLVMContext & context;
         
         llvm::AllocaInst * stackVar;
         
-        const llvm::Type * stackValueTy;
-        const llvm::Type * stackTy;
+        llvm::Type * stackValueTy;
+        llvm::Type * stackTy;
         std::map<std::pair<ColorBlock *, int>, llvm::BasicBlock *> transitionBlocks;
         
         // Generated functions
@@ -73,7 +74,7 @@ namespace pietc {
         llvm::Function * debugValueFn;
         
         // Image functions
-        void explore(int x, int y, ColorBlock * colorBlock);
+        void dfs(int x, int y, ColorBlock * colorBlock);
         void computeColorBlockTransitions(ColorBlock * colorBlock);
         bool computeTransition(ColorBlock * colorBlock, int dp, int cc, Transition & tran);
         bool whiteCodelSlide(ColorBlock ** ColorBlock, int * dp, int * cc, int x, int y);
